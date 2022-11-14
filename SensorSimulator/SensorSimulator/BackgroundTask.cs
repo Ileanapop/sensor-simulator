@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SensorSimulator.RabbitMQProducer;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -17,10 +18,16 @@ namespace SensorSimulator
 
         private TextBox textBox;
 
-        public BackgroundTask(TimeSpan interval, TextBox textBox)
+        private readonly IMessageProducer _messageProducer;
+
+        private string UserDeviceID { get; set; }
+
+        public BackgroundTask(TimeSpan interval, TextBox textBox,IMessageProducer messageProducer, string id)
         {
             _timer = new PeriodicTimer(interval);
             this.textBox = textBox;
+            _messageProducer = messageProducer;
+            UserDeviceID = id;
         }
 
         public void Start()
@@ -36,6 +43,16 @@ namespace SensorSimulator
                 {             
                     textBox.AppendText(DateTime.Now.ToString("O"));
                     textBox.AppendText(Environment.NewLine);
+
+                    ReadingDTO reading = new()
+                    {
+                        Timestamp = DateTime.Now,
+                        DeviceId = UserDeviceID,
+                        MeasurementValue = 25.0
+                    };
+
+                    _messageProducer.SendMessage(reading);
+
 
                 }
 

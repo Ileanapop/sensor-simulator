@@ -1,3 +1,5 @@
+using SensorSimulator.RabbitMQProducer;
+
 namespace SensorSimulator
 {
     public partial class Form1 : Form
@@ -30,7 +32,8 @@ namespace SensorSimulator
 
         private void button1_Click(object sender, EventArgs e)
         {
-            backgroundTask = new BackgroundTask(TimeSpan.FromMilliseconds(1000),textBox1);
+            IMessageProducer producer = new RabbitMQProducerMessage();
+            backgroundTask = new BackgroundTask(TimeSpan.FromMilliseconds(1000),textBox1,producer,UserDeviceId);
             backgroundTask.Start();
         }
 
