@@ -8,7 +8,7 @@ namespace SensorSimulator.RabbitMQProducer
 {
     public class ReadingDTO
     {
-        public DateTime Timestamp { get; set; }
+        public string Timestamp { get; set; }
         public string DeviceId{ get; set; }
 
         public double MeasurementValue { get; set; }

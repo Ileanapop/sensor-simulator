@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,6 +21,8 @@ namespace SensorSimulator
 
         private readonly IMessageProducer _messageProducer;
 
+        private StreamReader _reader;
+
         private string UserDeviceID { get; set; }
 
         public BackgroundTask(TimeSpan interval, TextBox textBox,IMessageProducer messageProducer, string id)
@@ -28,6 +31,7 @@ namespace SensorSimulator
             this.textBox = textBox;
             _messageProducer = messageProducer;
             UserDeviceID = id;
+            _reader = new StreamReader(@"D:\Anul_4\NewDS\Assignment 2\sensor.csv");
         }
 
         public void Start()
@@ -41,15 +45,23 @@ namespace SensorSimulator
             {
                 while(await _timer.WaitForNextTickAsync(_cts.Token))
                 {             
-                    textBox.AppendText(DateTime.Now.ToString("O"));
                     textBox.AppendText(Environment.NewLine);
+                    
+
+                    var measurement = 0.0;
+                    if (!_reader.EndOfStream)
+                        measurement = double.Parse(_reader.ReadLine());
+                    else
+                        throw new OperationCanceledException("End of file");
 
                     ReadingDTO reading = new()
                     {
-                        Timestamp = DateTime.Now,
+                        Timestamp = DateTime.UtcNow.ToString("o"),
                         DeviceId = UserDeviceID,
-                        MeasurementValue = 25.0
+                        MeasurementValue = measurement
                     };
+
+                    textBox.AppendText(measurement.ToString());
 
                     _messageProducer.SendMessage(reading);
 
@@ -57,9 +69,9 @@ namespace SensorSimulator
                 }
 
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException e)
             {
-
+                textBox.Text = e.Message;
             }
         }
 
